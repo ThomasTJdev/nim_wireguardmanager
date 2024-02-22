@@ -1,0 +1,311 @@
+#? stdtmpl | standard
+#
+#
+#proc htmlStatusBlock(wg: WGglobal, item: JsonNode): string =
+<div>
+  # if item["type"].getStr() == "peer":
+  <div>
+    # if wg.wgconfignames.hasKey(item["ident"].getStr()):
+      <b>${wg.wgconfignames[item["ident"].getStr()]}</b>
+    # else:
+      <b>Missing peer configuration</b>
+    # end if
+  </div>
+  # end if
+  <div id="${item["ident"].getStr()}" class="datablock">
+    # if item["type"].getStr() == "interface":
+    <div>
+      <span style="color:green;font-weight:700">interface: </span>
+      <span style="color:green">${item["interface"].getStr()}</span>
+    </div>
+    # elif item["type"].getStr() == "peer":
+    <div>
+      <span style="color:orangered;font-weight:700">peer: </span>
+      <span style="color:orangered">${item["peer"].getStr()}</span>
+    </div>
+    # end if
+    #
+    # for key, value in item.pairs():
+      # if key notin ["type", "ident"]:
+        <div>
+          <span style="font-weight:700;padding-left:20px;">${key}:</span>
+          <span>${value.getStr()}</span>
+        </div>
+      # end if
+    # end for
+  </div>
+</div>
+#end proc
+#
+#proc htmlStatus(): string =
+#
+#
+#
+# let wg = wgData()
+<script>${wg.wgstatus}</script>
+
+<h1>WG status</h1>
+
+<div class="mono" style="display: grid; grid-template-columns: 1fr; width: fit-content; grid-column-gap: 40px; grid-row-gap: 30px;margin-bottom:40px;">
+  # for item in wg.wgstatus:
+    # if item["type"].getStr() != "interface":
+      # break
+    # end if
+    ${htmlStatusBlock(wg, item)}
+  # end for
+</div>
+
+<div class="mono" style="display: grid; grid-template-columns: 1fr 1fr; width: fit-content; grid-column-gap: 40px; grid-row-gap: 30px;">
+  # for item in wg.wgstatus:
+    # if item["type"].getStr() == "interface":
+      # continue
+    # end if
+    ${htmlStatusBlock(wg, item)}
+  # end for
+</div>
+#end proc
+#
+#
+#
+#proc htmlServerBlock(wg: WGglobal, item: JsonNode): string =
+<div>
+  # if item["type"].getStr() == "peer":
+  <div>
+    # if wg.wgconfignames.hasKey(item["ident"].getStr()):
+    <b>${wg.wgconfignames[item["ident"].getStr()]}</b>
+    # else:
+    <b>Missing peer configuration</b>
+    # end if
+  </div>
+  # end if
+
+  <div id="${item["ident"].getStr()}"  class="datablock">
+    # if item["type"].getStr() == "interface":
+    <div>
+      <span style="color:green;font-weight:700">[Interface]</span>
+    </div>
+    # elif item["type"].getStr() == "peer":
+    <div>
+      <span style="color:orangered;font-weight:700">[Peer]</span>
+    </div>
+    # end if
+    #
+    # for key, value in item.pairs():
+      # if key notin ["type", "ident"]:
+        <div>
+          <span style="font-weight:700;padding-left:20px;">${key}:</span>
+          <span>${value.getStr()}</span>
+        </div>
+      # end if
+    # end for
+
+    # if item["type"].getStr() == "peer":
+    <hr>
+      <div>
+        <span style="color:orangered;font-weight:700">[Config]</span>
+      </div>
+      # for k, v in wg.wgconfigs[item["ident"].getStr()]:
+        # if k in ["type", "file", "ident"]:
+          # continue
+        # end if
+        <div>
+          <span style="font-weight:700;padding-left:20px;">${k}:</span>
+          <span>${v.getStr()}</span>
+        </div>
+      # end for
+    # end if
+  </div>
+
+  # if item["type"].getStr() == "interface":
+  <div>
+    <a href="/server/config?ident=${item["ident"].getStr()}">Server config</a>
+  </div>
+  # elif item["type"].getStr() == "peer":
+  <div style="display: flex;justify-content: space-around;width: 580px;">
+    <a href="/peer/edit?ident=${item["ident"].getStr()}" onclick="editPeer('${item["ident"].getStr()}')">Edit peer</a>
+    <a href="/peer/qr?ident=${item["ident"].getStr()}">Peer QR</a>
+    <a href="/peer/config?ident=${item["ident"].getStr()}">Peer config</a>
+    <a href="/peer/delete?ident=${item["ident"].getStr()}">Delete</a>
+  </div>
+  # end if
+</div>
+#end proc
+#
+#
+#
+#proc htmlServer(): string =
+#
+#
+# let wg = wgData()
+<script>${wg.wgserver}</script>
+
+<h1>Server setup</h1>
+
+<div class="mono" style="display: grid; grid-template-columns: 1fr; width: fit-content; grid-column-gap: 40px; grid-row-gap: 30px; margin-bottom: 40px;">
+  # for item in wg.wgserver:
+    # if item["type"].getStr() != "interface":
+      # break
+    # end if
+    ${htmlServerBlock(wg, item)}
+  # end for
+</div>
+
+<div class="mono" style="display: grid; grid-template-columns: 1fr 1fr; width: fit-content; grid-column-gap: 40px; grid-row-gap: 30px;">
+  # for item in wg.wgserver:
+    # if item["type"].getStr() == "interface":
+      # continue
+    # end if
+    ${htmlServerBlock(wg, item)}
+  # end for
+</div>
+#end proc
+#
+#
+#proc htmlAddServer(): string =
+#
+#
+
+<h1>Add server</h1>
+
+<div>
+  <form method="POST" action="/server/add">
+    <div>
+      <label for="address">Address</label>
+      <input type="text" name="address" style="width: 100%;" value="${defaultIpStart}1/24">
+    </div>
+
+    <div>
+      <label for="port">ListenPort</label>
+      <input type="number" name="port" value="${defaultPort}">
+    </div>
+
+    <div>
+      <label for="device">NetworkDevice</label>
+      <input type="text" name="device" value="${interfaceName}">
+    </div>
+
+    <div>
+      <button type="submit">Add server</button>
+    </div>
+  </form>
+</div>
+#end proc
+#
+#
+#proc htmlAddPeer(): string =
+#
+#
+
+<h1>Add peer</h1>
+
+<div>
+  <form method="POST" action="/peer/add">
+    <div>
+      <label for="name">Name</label>
+      <input type="text" name="name" style="width: 100%;" value="myself">
+    </div>
+
+    <div>
+      <label for="address">Address</label>
+      <input type="text" name="address" style="width: 100%;" value="${defaultIpStart}2/32">
+    </div>
+
+    <div>
+      <label for="dns">DNS</label>
+      <input type="text" name="dns" value="${defaultDns}">
+    </div>
+
+    <div>
+      <label for="endpointAddress">Endpoint address</label>
+      <input type="text" name="endpointAddress" value="you.public.ip.address">
+    </div>
+
+    <div>
+      <label for="endpointPort">Endpoint port</label>
+      <input type="number" name="endpointPort" value="${defaultPort}">
+    </div>
+
+    <div>
+      <label for="allowedIPs">AllowedIPs</label>
+      <input type="text" name="allowedIPs" value="${peerAllowedIPs}">
+    </div>
+
+    <div>
+      <button type="submit">Add per</button>
+    </div>
+  </form>
+</div>
+#end proc
+#
+#
+#proc htmlDeletePeer(peerIdent, peerName: string): string =
+#
+#
+
+<h1>Delete peer: ${peerName}</h1>
+
+<div>
+  <form method="POST" action="/peer/delete">
+    <input type="hidden" name="ident" value="${peerIdent}">
+    <div>
+      <button type="submit">Delete peer</button>
+    </div>
+  </form>
+</div>
+#end proc
+#
+#
+#proc htmlPeerConfig(peerIdent, peerName, config, keyPriv, keyPub: string): string =
+#
+#
+<div>
+  <h1>Edit peer: ${peerName}</h1>
+
+  <form method="POST" action="/peer/edit">
+    <input type="hidden" name="ident" value="${peerIdent}">
+    <textarea name="config" style="width: 100%;height: 300px;max-width: 500px;font-family: monospace;padding: 20px;">${config}</textarea>
+    <div>
+      <button type="submit">Edit peer</button>
+    </div>
+  </form>
+
+  <hr style="margin: 60px 0;width:550px;">
+
+  <h1>Original data</h1>
+  <pre style="max-width: 500px; background-color: lightgrey; padding: 20px; border: 1px solid silver;overflow: auto;">
+keyPriv: ${keyPriv}
+keyPub:  ${keyPub}
+
+${config}
+    </pre>
+
+</div>
+#end proc
+#
+#
+#proc htmlServerConfig(peerIdent, peerName, config, keyPriv, keyPub: string): string =
+#
+#
+<div>
+  <h1>Edit peer: ${peerName}</h1>
+
+  <form method="POST" action="/server/edit">
+    <input type="hidden" name="ident" value="${peerIdent}">
+    <textarea name="config" style="width: 100%;height: 300px;max-width: 500px;font-family: monospace;padding: 20px;">${config}</textarea>
+    <div>
+      <button type="submit">Edit peer</button>
+    </div>
+  </form>
+
+  <hr style="margin: 60px 0;width:550px;">
+
+  <h1>Original data</h1>
+  <pre style="max-width: 500px; background-color: lightgrey; padding: 20px; border: 1px solid silver;">
+keyPriv: ${keyPriv}
+keyPub:  ${keyPub}
+
+${config}
+    </pre>
+
+</div>
+#end proc

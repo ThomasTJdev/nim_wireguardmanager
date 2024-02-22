@@ -1,0 +1,107 @@
+#? stdtmpl | standard
+#
+#
+#
+#
+#proc htmlAddPeer(): string =
+#
+#
+# var nextIp: int
+# let wg = wgData()
+# for k, config in wg.wgconfigs:
+  # let address = config["Address"].getStr().split("/")[0].split(".")
+  # let endNr   = address[address.high].parseInt()
+  # if endNr > nextIp:
+    # nextIp = endNr + 1
+  # end if
+# end for
+#
+# if nextIp in [0, 1]:
+  # nextIp = 2
+# end if
+
+<h1>Add peer</h1>
+
+<div>
+  <form method="POST" action="/peer/add" class="inputDivs">
+    <div>
+      <label for="name">Name</label>
+      <input type="text" name="name" value="myself">
+    </div>
+
+    <div>
+      <label for="address">Address</label>
+      <input type="text" name="address" value="${defaultIpStart}${nextIp}/32">
+    </div>
+
+    <div>
+      <label for="dns">DNS</label>
+      <input type="text" name="dns" value="${defaultDns}">
+    </div>
+
+    <div>
+      <label for="endpointAddress">Endpoint address</label>
+      <input type="text" name="endpointAddress" value="you.public.ip.address">
+    </div>
+
+    <div>
+      <label for="endpointPort">Endpoint port</label>
+      <input type="number" name="endpointPort" value="${defaultPort}">
+    </div>
+
+    <div>
+      <label for="allowedIPs">AllowedIPs</label>
+      <input type="text" name="allowedIPs" value="${peerAllowedIPs}">
+    </div>
+
+    <div>
+      <button type="submit">Add per</button>
+    </div>
+  </form>
+</div>
+#end proc
+#
+#
+#proc htmlDeletePeer(peerIdent, peerName: string): string =
+#
+#
+
+<h1>Delete peer: ${peerName}</h1>
+
+<div>
+  <form method="POST" action="/peer/delete">
+    <input type="hidden" name="ident" value="${peerIdent}">
+    <div>
+      <button type="submit">Delete peer</button>
+    </div>
+  </form>
+</div>
+#end proc
+#
+#
+#proc htmlPeerConfig(peerIdent, peerName, config, keyPriv, keyPub: string): string =
+#
+#
+<div>
+  <h1>Edit peer: ${peerName}</h1>
+
+  <form method="POST" action="/peer/edit">
+    <input type="hidden" name="ident" value="${peerIdent}">
+    <textarea name="config" style="width: 100%;height: 300px;max-width: 500px;font-family: monospace;padding: 20px;">${config}</textarea>
+    <div>
+      <button type="submit">Edit peer</button>
+    </div>
+  </form>
+
+  <hr style="margin: 60px 0;width:550px;">
+
+  <h1>Original data</h1>
+  <pre style="max-width: 500px; background-color: lightgrey; padding: 20px; border: 1px solid silver;overflow: auto;">
+keyPriv: ${keyPriv}
+keyPub:  ${keyPub}
+
+${config}
+    </pre>
+
+</div>
+#end proc

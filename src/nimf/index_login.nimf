@@ -1,0 +1,43 @@
+#? stdtmpl | standard
+#
+#
+#
+#
+#proc htmlLogin(): string =
+#
+#
+<div>
+  <h1>Login</h1>
+
+  <form method="POST" action="/login">
+    <input type="password" name="pass" value="" required>
+    <div>
+      <button type="submit">Login</button>
+    </div>
+  </form>
+
+</div>
+#end proc
+#
+#
+#
+#
+#proc htmlLoginCreate(): string =
+#
+#
+<div>
+  <h1>Create admin password</h1>
+
+  <p>Will be saved in clear text on disk</p>
+
+  <form method="POST" action="/login/create">
+    <input type="password" name="pass" value="" required>
+    <div>
+      <button type="submit">Create</button>
+    </div>
+  </form>
+
+</div>
+#end proc
+#
+#

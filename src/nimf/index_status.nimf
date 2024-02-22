@@ -1,0 +1,66 @@
+#? stdtmpl | standard
+#
+#
+#proc htmlStatusBlock(wg: WGglobal, item: JsonNode): string =
+<div>
+  # if item["type"].getStr() == "peer":
+  <div>
+    # if wg.wgconfignames.hasKey(item["ident"].getStr()):
+      <b>${wg.wgconfignames[item["ident"].getStr()]}</b>
+    # else:
+      <b>Missing peer configuration</b>
+    # end if
+  </div>
+  # end if
+  <div id="${item["ident"].getStr()}" class="datablock">
+    # if item["type"].getStr() == "interface":
+    <div>
+      <span style="color:green;font-weight:700">interface: </span>
+      <span style="color:green">${item["interface"].getStr()}</span>
+    </div>
+    # elif item["type"].getStr() == "peer":
+    <div>
+      <span style="color:orangered;font-weight:700">peer: </span>
+      <span style="color:orangered">${item["peer"].getStr()}</span>
+    </div>
+    # end if
+    #
+    # for key, value in item.pairs():
+      # if key notin ["type", "ident"]:
+        <div>
+          <span style="font-weight:700;padding-left:20px;">${key}:</span>
+          <span>${value.getStr()}</span>
+        </div>
+      # end if
+    # end for
+  </div>
+</div>
+#end proc
+#
+#proc htmlStatus(): string =
+#
+#
+#
+# let wg = wgData()
+<script>${wg.wgstatus}</script>
+
+<h1>WG status</h1>
+
+<div class="mono" style="display: grid; grid-template-columns: 1fr; width: fit-content; grid-column-gap: 40px; grid-row-gap: 30px;margin-bottom:40px;">
+  # for item in wg.wgstatus:
+    # if item["type"].getStr() != "interface":
+      # break
+    # end if
+    ${htmlStatusBlock(wg, item)}
+  # end for
+</div>
+
+<div class="mono" style="display: grid; grid-template-columns: 1fr 1fr; width: fit-content; grid-column-gap: 40px; grid-row-gap: 30px;">
+  # for item in wg.wgstatus:
+    # if item["type"].getStr() == "interface":
+      # continue
+    # end if
+    ${htmlStatusBlock(wg, item)}
+  # end for
+</div>
+#end proc

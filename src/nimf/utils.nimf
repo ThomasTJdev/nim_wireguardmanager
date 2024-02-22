@@ -1,0 +1,75 @@
+#? stdtmpl | standard
+#
+#
+#
+#proc htmlNavbar(): string =
+<div id="navbar">
+  <div id="navbar-content" style="display: flex;align-items: center;">
+    <div id="navbar-header">
+      Wireguard service:
+    </div>
+    <div id="navbar-menu">
+      <div style="display: flex;padding: 0;" class="content">
+        <form method="POST" action="/status/stop">
+          <button type="submit">Stop</button>
+        </form>
+        <form method="POST" action="/status/restart">
+          <button type="submit">Restart</button>
+        </form>
+        <form method="POST" action="/status/start">
+          <button type="submit">Start</button>
+        </form>
+        <form method="GET" action="/">
+          <button type="submit">Refresh</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+#end proc
+#
+#
+#
+#proc htmlSidebar(): string =
+<div id="sidebar">
+  <div id="sidebar-content">
+    <!-- <div id="sidebar-header">
+      Wireguard manager
+    </div> -->
+    <div id="sidebar-menu">
+      <a href="/">Status</a>
+      <a href="/server">Server</a>
+      <a href="/peer/add">Add Peer</a>
+      <a href="/server/add">Add Server</a>
+    </div>
+  </div>
+</div>
+#end proc
+#
+#
+#
+#proc htmlMain(content: string): string =
+<!DOCTYPE html>
+<html lang="EN">
+<head>
+  <title>Wireguard manager</title>
+  <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="description" content="Manage Wireguard">
+  <meta name="keywords" content="vpn">
+  <meta name="author" content="ThomasTJdev">
+  <meta name="copyright" content="ThomasTJdev">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header>
+    ${htmlNavbar()}
+  </header>
+  <main>
+    ${htmlSidebar()}
+    <div class="content">
+      ${content}
+    </div>
+  </main>
+</body>
+</html>
+#end proc
