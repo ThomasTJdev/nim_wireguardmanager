@@ -14,16 +14,16 @@ jobs:
     strategy:
       matrix:
         nim:
-          - '1.6.14'
+          - '1.6.18'
           - 'stable'
-    name: Nim ${{ matrix.nim }} sample
+    name: Nim ${{ matrix.nim }}
     steps:
       - uses: actions/checkout@v3
       - name: Setup nim
         uses: jiro4989/setup-nim-action@v1
         with:
           nim-version: ${{ matrix.nim }}
-      - run:
+      - run: |
           nimble refresh
           nimble install --depsOnly -y
           nimble build
