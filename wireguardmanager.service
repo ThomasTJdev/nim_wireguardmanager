@@ -1,0 +1,25 @@
+#
+# nano /lib/systemd/system/wireguardmanager.service
+# => INSERT THIS FILE
+#    replace 'user' in paths with 'your user'
+#
+# => RUN
+# systemctl enable wireguardmanager
+# systemctl start wireguardmanager
+# systemctl status wireguardmanager
+# systemctl stop wireguardmanager
+#
+#
+[Unit]
+Description=wireguardmanager
+
+[Service]
+User=root
+Type=simple
+WorkingDirectory=/home/user/nim_wireguardmanager
+ExecStart=/home/user/nim_wireguardmanager/wireguardmanager
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
