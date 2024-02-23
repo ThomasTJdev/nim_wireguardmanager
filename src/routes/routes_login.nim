@@ -31,7 +31,7 @@ proc routesLoginDo*(request: Request) =
     redirect("/login/create")
   elif @"pass" == adminKeyRawGet():
     var headers: HttpHeaders
-    setCookie("pass", pass)
+    setCookie("pass", pass, secure = false)
     redirect("/")
   else:
     redirect("/login")
