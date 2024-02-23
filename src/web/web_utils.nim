@@ -4,7 +4,8 @@ import
   std/[
     locks,
     md5,
-    os
+    os,
+    strutils
   ]
 
 
@@ -41,7 +42,7 @@ proc getSalt(): string =
 proc adminKeyRawGet*(): string =
   if not fileExists(defaultKeyPath / "admin.txt"):
     return ""
-  return readFile(defaultKeyPath / "admin.txt")
+  return readFile(defaultKeyPath / "admin.txt").strip(chars = {'\n', ' '})
 
 
 proc adminKeySet*(key: string) =

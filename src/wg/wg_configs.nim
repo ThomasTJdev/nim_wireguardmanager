@@ -19,6 +19,7 @@ PrivateKey = $1
 Address = $2
 ListenPort = $3
 SaveConfig = false
+PreUp = sysctl -w net.ipv4.ip_forward=1
 PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -A FORWARD -o wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o $4 -j MASQUERADE
 PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -A FORWARD -o wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o $4 -j MASQUERADE"""
 
