@@ -6,7 +6,7 @@ import
 
 
 import
-  ../wg/wg_status
+  ../wg/wg_data
 
 
 proc routesApiServer*(request: Request) =

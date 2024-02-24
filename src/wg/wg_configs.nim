@@ -5,12 +5,14 @@ import
     json,
     os,
     osproc,
-    strutils
+    strutils,
+    tables,
+    times
   ]
 
 import
   ../globals,
-  ./wg_status
+  ./wg_data
 
 
 
@@ -130,6 +132,52 @@ proc confCreatePeer*(
   return fullPath
 
 
+proc confActivatePeer*(peerIdent: string) =
+  ## Peer: Deactivates a peer
+  let wg = wgData()
+  var
+    peerIsPresent = false
+  for item in wg.wgserver:
+    if item["type"].getStr() == "interface":
+      continue
+    elif item["ident"].getStr() != peerIdent:
+      peerIsPresent = true
+      break
+
+  if not peerIsPresent:
+    return
+
+
+  #
+  # Add existing peer to server configuration
+  #
+  var
+    newServerConf: string
+    newPeerConf: string
+
+  newServerConf = readFile(defaultWgInstancePath)
+
+  if not wg.wgconfigs.hasKey(peerIdent):
+    return
+
+  newPeerConf.add("\n[Peer]\n")
+  for k, v in pairs(wg.wgconfigs[peerIdent]):
+    if k in ["PublicKey", "PresharedKey"]:
+      newPeerConf.add(k & " = " & v.getStr() & "\n")
+    elif k == "Address":
+      newPeerConf.add("AllowedIPs = " & v.getStr() & "\n")
+
+
+  #
+  # Save new server configuration
+  discard existsOrCreateDir(defaultBackupPath)
+  moveFile(defaultWgInstancePath, defaultBackupPath / defaultWgInstance & ".conf." & $toInt(epochTime()))
+
+  writeFile(defaultWgInstancePath, (newServerConf & newPeerConf).replace("\n\n\n\n", "\n\n"))
+
+  wgRestart()
+
+
 proc confDeactivatePeer*(peerIdent: string) =
   ## Peer: Deactivates a peer
   let wg = wgData()
@@ -158,6 +206,9 @@ proc confDeactivatePeer*(peerIdent: string) =
   #
   # Save new server configuration
   #
+  discard existsOrCreateDir(defaultBackupPath)
+  moveFile(defaultWgInstancePath, defaultBackupPath / defaultWgInstance & ".conf." & $toInt(epochTime()))
+
   writeFile(defaultWgInstancePath, newServerConf.replace("\n\n\n\n", "\n\n"))
 
   wgRestart()
@@ -166,6 +217,9 @@ proc confDeactivatePeer*(peerIdent: string) =
 proc confDeletePeer*(peerIdent, peerName: string) =
   ## Peer: Deletes a peer configuration file
 
+  #
+  # This removes it from the server block
+  #
   confDeactivatePeer(peerIdent)
 
   #
@@ -176,9 +230,12 @@ proc confDeletePeer*(peerIdent, peerName: string) =
     keyPriv  = defaultKeyPath / peerName & "_priv.key"
     keyPub   = defaultKeyPath / peerName & "_pub.key"
 
-  discard tryRemoveFile(confPath)
-  discard tryRemoveFile(keyPriv)
-  discard tryRemoveFile(keyPub)
+  # discard tryRemoveFile(confPath)
+  # discard tryRemoveFile(keyPriv)
+  # discard tryRemoveFile(keyPub)
+  moveFile(confPath, defaultBackupPath / peerName & ".conf." & $toInt(epochTime()))
+  moveFile(keyPriv, defaultBackupPath / peerName & "_priv.key." & $toInt(epochTime()))
+  moveFile(keyPub, defaultBackupPath / peerName & "_pub.key." & $toInt(epochTime()))
 
   wgRestart()
 

@@ -17,6 +17,7 @@ import
 
 import
   ./globals,
+  ./wg/wg_data,
   ./wg/wg_configs,
   ./wg/wg_status
 

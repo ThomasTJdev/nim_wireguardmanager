@@ -80,6 +80,10 @@ h1 {
   width: 550px;
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   border: 1px solid silver;
+  overflow-x: auto;
+}
+.content .datablock>div {
+  white-space: nowrap;
 }
 
 form.inputDivs {
@@ -107,6 +111,32 @@ form.inputDivs button {
   margin-top: 30px;
 }
 
+
+
+
 .mono * {
   font-family: monospace;
+}
+
+
+
+/* width */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }

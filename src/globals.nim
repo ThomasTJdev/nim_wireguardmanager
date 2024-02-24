@@ -1,4 +1,18 @@
 
+import
+  std/[
+    json,
+    tables
+  ]
+
+
+type
+  WGglobal* = ref object
+    wgstatus*: JsonNode
+    wgserver*: JsonNode
+    wgconfigs*: Table[string, JsonNode]
+    wgconfignames*: Table[string, string]
+    wgconfigfiles*: Table[string, JsonNode]
 
 
 const

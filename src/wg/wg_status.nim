@@ -13,12 +13,6 @@ import
 import
   ../globals
 
-type
-  WGglobal* = ref object
-    wgstatus*: JsonNode
-    wgserver*: JsonNode
-    wgconfigs*: Table[string, JsonNode]
-    wgconfignames*: Table[string, string]
 
 
 proc wgStatusToJson*(data: string, serverName = "", singleConfig = false, singleConfigName = ""): JsonNode =
@@ -49,6 +43,8 @@ proc wgStatusToJson*(data: string, serverName = "", singleConfig = false, single
       continue
 
     var obj = %* {}
+    obj["error"] = false.newJBool()
+
     if singleConfig:
       obj["type"] = "config".newJString()
 
@@ -85,7 +81,11 @@ proc wgStatusToJson*(data: string, serverName = "", singleConfig = false, single
       continue
 
     if singleConfig:
-      obj["ident"] = getMD5(readFile(defaultKeyPath / (singleConfigName & "_pub.key")).replace("\n", "").strip(chars = {'\n',' '})).newJString()
+      if not fileExists(defaultKeyPath / (singleConfigName & "_pub.key")):
+        obj["ident"] = (singleConfigName).strip(chars = {'\n',' '}).newJString()
+        obj["error"] = true.newJBool()
+      else:
+        obj["ident"] = getMD5(readFile(defaultKeyPath / (singleConfigName & "_pub.key")).replace("\n", "").strip(chars = {'\n',' '})).newJString()
 
     if not obj.hasKey("ident"):
       obj["ident"] = "2FUCK".newJString()
@@ -103,45 +103,32 @@ proc wgStatus*(): string =
 
 
 
-proc wgData*(): WGglobal =
-  let wgstatus = wgStatusToJson(wgStatus())
-  let wgserver =
-      if not fileExists(defaultWgInstancePath):
-        %* []
-      else:
-        wgStatusToJson(readFile(defaultWgInstancePath), serverName = defaultWgInstance)
+proc wgFileValidation*(): Table[string, JsonNode] =
+  # Check that config files and key files used correct names.
 
-  var
-    wgconfigs: Table[string, JsonNode]
-    wgconfignames: Table[string, string]
-    hasConfigs = false
-
+  var hasData: bool
   for file in walkDir(defaultConfigPath):
-    if file.kind == pcFile and file.path.endsWith(".conf"):
-      var tmp = wgStatusToJson(readFile(file.path), singleConfig = true, singleConfigName = splitFile(file.path).name)
-      tmp[0]["file"] = (splitFile(file.path).name & ".conf").newJString()
-      wgconfigs[tmp[0]["ident"].getStr()] = tmp[0]
-      wgconfignames[tmp[0]["ident"].getStr()] = splitFile(file.path).name
-      hasConfigs = true
-  if not hasConfigs:
-    wgconfigs[""] = %* {"type": "empty".newJString()}
+    if file.kind != pcFile or not file.path.endsWith(".conf"):
+      continue
 
-  when defined(dev):
-    echo "\n------------------- Wireguard Data"
-    echo "Status =>"
-    echo pretty(wgstatus)
-    echo "Server =>"
-    echo pretty(wgserver)
-    echo "Configs =>"
-    for k, v in wgconfigs:
-      echo pretty(v)
-    echo "Config Names =>"
-    for k, v in wgconfignames:
-      echo v & " ==> " & k
+    let
+      configName = splitFile(file.path).name
 
-  return WGglobal(
-      wgstatus: wgstatus,
-      wgserver: wgserver,
-      wgconfigs: wgconfigs,
-      wgconfignames: wgconfignames
-    )
+    let
+      hasKeyPriv = fileExists(defaultKeyPath / configName & "_priv.key")
+      hasKeyPub  = fileExists(defaultKeyPath / configName & "_pub.key")
+
+    result[configName] = %* {
+      "config": file.path,
+      "hasKeyPriv": hasKeypriv,
+      "hasKeyPub": hasKeyPub
+    }
+
+    hasData = true
+
+  if not hasData:
+    result[""] = %* {}
+
+  return result
+
+

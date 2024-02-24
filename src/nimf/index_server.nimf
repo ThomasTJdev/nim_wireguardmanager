@@ -32,7 +32,7 @@
     # end if
     #
     # for key, value in item.pairs():
-      # if key notin ["type", "ident"]:
+      # if key notin ["type", "ident", "error"]:
         <div>
           <span style="font-weight:700;padding-left:20px;">${key}:</span>
           <span>${value.getStr()}</span>
@@ -52,26 +52,33 @@
       <div>
         <span style="color:orangered;font-weight:700">[Config]</span>
       </div>
-      # for k, v in wg.wgconfigs[item["ident"].getStr()]:
-        # if k in ["type", "file", "ident"]:
-          # continue
-        # end if
+      # if (not item.hasKey("ident") or not wg.wgconfigs.hasKey(item["ident"].getStr())) or item["error"].getBool() == true:
         <div>
-          <span style="font-weight:700;padding-left:20px;">${k}:</span>
-          <span>${v.getStr()}</span>
+          <span style="color:red;font-weight:700;padding-left:20px;">Missing config:</span>
+          <span style="color:red;">Check filename of config and keys</span>
         </div>
-        # if k == "PreSharedKey" and v.getStr() != checkPreSharedKey:
-        <div>
-          <span style="color:red;font-weight:700;padding-left:20px;">PresharedKey:</span>
-          <span style="color:red;">NOT MATCHING SERVER PresharedKey</span>
-        </div>
-        # elif k == "Address" and v.getStr() != checkAllowedIPs:
-        <div>
-          <span style="color:red;font-weight:700;padding-left:20px;">Address:</span>
-          <span style="color:red;">NOT MATCHING SERVER AllowedIPs</span>
-        </div>
-        # end if
-      # end for
+      # else:
+        # for k, v in wg.wgconfigs[item["ident"].getStr()]:
+          # if k in ["type", "file", "ident"]:
+            # continue
+          # end if
+          <div>
+            <span style="font-weight:700;padding-left:20px;">${k}:</span>
+            <span>${v.getStr()}</span>
+          </div>
+          # if k == "PreSharedKey" and v.getStr() != checkPreSharedKey:
+          <div>
+            <span style="color:red;font-weight:700;padding-left:20px;">PresharedKey:</span>
+            <span style="color:red;">NOT MATCHING SERVER PresharedKey</span>
+          </div>
+          # elif k == "Address" and v.getStr() != checkAllowedIPs:
+          <div>
+            <span style="color:red;font-weight:700;padding-left:20px;">Address:</span>
+            <span style="color:red;">NOT MATCHING SERVER AllowedIPs</span>
+          </div>
+          # end if
+        # end for
+      # end if
     # end if
   </div>
 
@@ -81,9 +88,13 @@
   </div>
   # elif item["type"].getStr() == "peer":
   <div style="display: flex;justify-content: space-around;width: 580px;">
-    <a href="/peer/edit?ident=${item["ident"].getStr()}" onclick="editPeer('${item["ident"].getStr()}')">Edit peer</a>
+    <!-- <a href="/peer/edit?ident=${item["ident"].getStr()}" onclick="editPeer('${item["ident"].getStr()}')">Edit peer</a> -->
     <a href="/peer/qr?ident=${item["ident"].getStr()}">Peer QR</a>
     <a href="/peer/config?ident=${item["ident"].getStr()}">Peer config</a>
+    <form method="POST" action="/peer/deactivate">
+      <input type="hidden" name="ident" value="${item["ident"].getStr()}">
+      <button type="submit">Deactivate</button>
+    </form>
     <a href="/peer/delete?ident=${item["ident"].getStr()}">Delete</a>
   </div>
   # end if
